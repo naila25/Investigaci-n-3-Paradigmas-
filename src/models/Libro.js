@@ -1,25 +1,18 @@
-
+// src/models/Libro.js
 export class Libro {
   constructor(titulo, autor, anio) {
     this.titulo = titulo;
     this.autor = autor;
     this.anio = anio;
-    this.disponible = true;
+    this.estado = "Disponible"; // 👈 nuevo atributo
   }
 
-  prestar() {
-    if (this.disponible) {
-      this.disponible = false;
-      return true;
-    }
-    return false;
+  // Método para prestar o devolver el libro
+  cambiarEstado() {
+    this.estado = this.estado === "Disponible" ? "Prestado" : "Disponible";
   }
 
-  devolver() {
-    this.disponible = true;
-  }
-
-  estado() {
-    return this.disponible ? "Disponible" : "Prestado";
+  info() {
+    return `${this.titulo} - ${this.autor} (${this.anio}) - Estado: ${this.estado}`;
   }
 }
