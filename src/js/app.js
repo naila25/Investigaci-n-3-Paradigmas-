@@ -35,6 +35,13 @@ const btnRegistrarUsuario = document.getElementById("btnRegistrarUsuario");
 const roleButtons = document.querySelectorAll(".role-button");
 
 const listaLibros = document.getElementById("listaLibros");
+const filtroLibros = document.getElementById("filtroLibros");
+const filtroUsuarios = document.getElementById("filtroUsuarios");
+const listaUsuarios = document.getElementById("listaUsuarios");
+
+// Variables para almacenar datos actuales
+let librosActuales = [];
+let usuariosActuales = [];
 
 // --- FUNCIONES DE NAVEGACIÓN ---
 function mostrarSeccion(seccion) {
@@ -51,9 +58,11 @@ function mostrarSeccion(seccion) {
   } else if (seccion === "registrar") {
     seccionRegistroUsuario.classList.remove("hidden");
     tituloPagina.textContent = "👤 Registrar Usuario";
+    mostrarUsuarios();
   } else if (seccion === "ver") {
     seccionVerLibros.classList.remove("hidden");
     tituloPagina.textContent = "👁 Ver Libros";
+    filtroLibros.value = "";
     mostrarLibros();
   }
 }
@@ -71,6 +80,8 @@ function limpiarFormularios() {
   inputFormato.value = "";
   inputNombre.value = "";
   inputEmail.value = "";
+  filtroLibros.value = "";
+  filtroUsuarios.value = "";
 }
 
 // --- EVENT LISTENERS PARA BOTONES DE ROLES ---
@@ -150,7 +161,9 @@ btnRegistrarUsuario.addEventListener("click", () => {
   
   if (biblioteca.agregarUsuario(nuevoUsuario)) {
     alert(`✅ "${nombre}" fue registrado como usuario.`);
-    limpiarFormularios();
+    inputNombre.value = "";
+    inputEmail.value = "";
+    mostrarUsuarios();
   } else {
     alert("⚠️ El email ya está registrado.");
   }
@@ -159,11 +172,26 @@ btnRegistrarUsuario.addEventListener("click", () => {
 // --- 4) Mostrar libros ---
 function mostrarLibros() {
   listaLibros.innerHTML = "";
-  const libros = biblioteca.obtenerLibros();
+  librosActuales = biblioteca.obtenerLibros();
   const usuarios = biblioteca.obtenerUsuarios();
 
-  if (!libros || libros.length === 0) {
+  if (!librosActuales || librosActuales.length === 0) {
     listaLibros.innerHTML = `<p class="text-gray-500 text-center text-lg">No hay libros registrados.</p>`;
+    return;
+  }
+
+  crearTablaLibros(librosActuales, usuarios);
+
+  // Evento de filtro en tiempo real
+  filtroLibros.removeEventListener("input", filtrarLibros);
+  filtroLibros.addEventListener("input", filtrarLibros);
+}
+
+function crearTablaLibros(libros, usuarios) {
+  listaLibros.innerHTML = "";
+  
+  if (libros.length === 0) {
+    listaLibros.innerHTML = `<p class="text-gray-500 text-center text-lg">No se encontraron resultados.</p>`;
     return;
   }
 
@@ -189,6 +217,9 @@ function mostrarLibros() {
   const cuerpo = tabla.querySelector("#tablaCuerpo");
 
   libros.forEach((libro, index) => {
+    // Encontrar el índice real del libro en biblioteca
+    const indexReal = biblioteca.obtenerLibros().indexOf(libro);
+    
     const fila = document.createElement("tr");
     fila.className = "border-t hover:bg-blue-50 transition";
 
@@ -196,7 +227,7 @@ function mostrarLibros() {
     
     if (libro.estado === "Disponible") {
       if (usuarios.length > 0) {
-        let selectUsuarios = `<select id="selectUsuario${index}" class="border p-1 rounded text-sm">
+        let selectUsuarios = `<select id="selectUsuario${indexReal}" class="border p-1 rounded text-sm">
           <option value="">Seleccionar usuario</option>`;
         usuarios.forEach((usuario, uIndex) => {
           selectUsuarios += `<option value="${uIndex}">${usuario.nombre}</option>`;
@@ -205,7 +236,7 @@ function mostrarLibros() {
         
         botonHTML = `
           ${selectUsuarios}
-          <button data-index="${index}" class="btnPrestar bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition mt-2">
+          <button data-index="${indexReal}" class="btnPrestar bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition mt-2">
             ✅ Prestar
           </button>
         `;
@@ -214,7 +245,7 @@ function mostrarLibros() {
       }
     } else {
       botonHTML = `
-        <button data-index="${index}" class="btnDevolver bg-orange-500 text-white px-3 py-1 rounded text-sm hover:bg-orange-600 transition">
+        <button data-index="${indexReal}" class="btnDevolver bg-orange-500 text-white px-3 py-1 rounded text-sm hover:bg-orange-600 transition">
           🔄 Devolver
         </button>
       `;
@@ -244,8 +275,9 @@ function mostrarLibros() {
   // Escuchar clics en botones de prestar
   document.querySelectorAll(".btnPrestar").forEach((btn) => {
     btn.addEventListener("click", (e) => {
-      const index = e.target.dataset.index;
-      const selectUsuario = document.getElementById(`selectUsuario${index}`);
+      const indexReal = e.target.dataset.index;
+      const usuarios = biblioteca.obtenerUsuarios();
+      const selectUsuario = document.getElementById(`selectUsuario${indexReal}`);
       const indexUsuario = selectUsuario.value;
 
       if (!indexUsuario) {
@@ -254,7 +286,7 @@ function mostrarLibros() {
       }
 
       const usuario = usuarios[indexUsuario];
-      const resultado = biblioteca.prestarLibro(index, usuario);
+      const resultado = biblioteca.prestarLibro(indexReal, usuario);
 
       if (resultado.exito) {
         alert(`✅ ${resultado.mensaje}`);
@@ -268,8 +300,8 @@ function mostrarLibros() {
   // Escuchar clics en botones de devolver
   document.querySelectorAll(".btnDevolver").forEach((btn) => {
     btn.addEventListener("click", (e) => {
-      const index = e.target.dataset.index;
-      const resultado = biblioteca.devolverLibro(index);
+      const indexReal = e.target.dataset.index;
+      const resultado = biblioteca.devolverLibro(indexReal);
 
       if (resultado.exito) {
         alert(`✅ ${resultado.mensaje}`);
@@ -279,4 +311,98 @@ function mostrarLibros() {
       }
     });
   });
+}
+
+// Función de filtro para libros
+function filtrarLibros(e) {
+  const filtro = e.target.value.toLowerCase();
+  const libros = biblioteca.obtenerLibros();
+  const usuarios = biblioteca.obtenerUsuarios();
+  
+  const librosFiltrados = libros.filter(libro => 
+    libro.titulo.toLowerCase().includes(filtro) || 
+    libro.autor.toLowerCase().includes(filtro)
+  );
+
+  crearTablaLibros(librosFiltrados, usuarios);
+}
+
+// --- 5) Mostrar usuarios registrados con filtro ---
+function mostrarUsuarios() {
+  listaUsuarios.innerHTML = "";
+  usuariosActuales = biblioteca.obtenerUsuarios();
+
+  if (!usuariosActuales || usuariosActuales.length === 0) {
+    listaUsuarios.innerHTML = `<p class="text-gray-500 text-center text-lg">No hay usuarios registrados.</p>`;
+    return;
+  }
+
+  crearTablaUsuarios(usuariosActuales);
+
+  // Evento de filtro en tiempo real
+  filtroUsuarios.removeEventListener("input", filtrarUsuarios);
+  filtroUsuarios.addEventListener("input", filtrarUsuarios);
+}
+
+function crearTablaUsuarios(usuarios) {
+  listaUsuarios.innerHTML = "";
+  
+  if (usuarios.length === 0) {
+    listaUsuarios.innerHTML = `<p class="text-gray-500 text-center text-lg">No se encontraron resultados.</p>`;
+    return;
+  }
+
+  const tabla = document.createElement("table");
+  tabla.className =
+    "min-w-full border border-gray-300 bg-white shadow-lg rounded-lg overflow-hidden";
+
+  tabla.innerHTML = `
+    <thead class="bg-gradient-to-r from-purple-600 to-purple-800 text-white">
+      <tr>
+        <th class="py-3 px-4 text-left">Nombre</th>
+        <th class="py-3 px-4 text-left">Email</th>
+        <th class="py-3 px-4 text-center">Préstamos Activos</th>
+        <th class="py-3 px-4 text-center">Total Préstamos</th>
+      </tr>
+    </thead>
+    <tbody id="tablaUsuariosCuerpo"></tbody>
+  `;
+
+  const cuerpo = tabla.querySelector("#tablaUsuariosCuerpo");
+
+  usuarios.forEach((usuario) => {
+    const fila = document.createElement("tr");
+    fila.className = "border-t hover:bg-purple-50 transition";
+
+    const prestamosActivos = usuario.obtenerPrestamosActivos().length;
+    const totalPrestamos = usuario.obtenerTodosPrestamos().length;
+
+    fila.innerHTML = `
+      <td class="py-3 px-4 font-semibold">${usuario.nombre}</td>
+      <td class="py-3 px-4">${usuario.email}</td>
+      <td class="py-3 px-4 text-center">
+        <span class="bg-orange-200 text-orange-800 px-3 py-1 rounded-full">${prestamosActivos}/2</span>
+      </td>
+      <td class="py-3 px-4 text-center">
+        <span class="bg-blue-200 text-blue-800 px-3 py-1 rounded-full">${totalPrestamos}</span>
+      </td>
+    `;
+
+    cuerpo.appendChild(fila);
+  });
+
+  listaUsuarios.appendChild(tabla);
+}
+
+// Función de filtro para usuarios
+function filtrarUsuarios(e) {
+  const filtro = e.target.value.toLowerCase();
+  const usuarios = biblioteca.obtenerUsuarios();
+  
+  const usuariosFiltrados = usuarios.filter(usuario => 
+    usuario.nombre.toLowerCase().includes(filtro) || 
+    usuario.email.toLowerCase().includes(filtro)
+  );
+
+  crearTablaUsuarios(usuariosFiltrados);
 }
