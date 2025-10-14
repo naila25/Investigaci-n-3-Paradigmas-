@@ -1,4 +1,3 @@
-
 import { Libro } from "./Libro.js";
 
 export class LibroDigital extends Libro {
@@ -7,7 +6,7 @@ export class LibroDigital extends Libro {
     this.formato = formato;
   }
 
- info() {
-  return `${this.titulo} - ${this.autor} - Año: ${this.anio} - Formato: ${this.formato}`;
-}
+  info() {
+    return `${this.titulo} - ${this.autor} - Año: ${this.anio} - Formato: ${this.formato} - Estado: ${this.estado}`;
+  }
 }

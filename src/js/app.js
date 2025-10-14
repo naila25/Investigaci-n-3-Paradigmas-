@@ -85,9 +85,10 @@ btnMostrar.addEventListener("click", () => {
 
   // Crear tabla
   const tabla = document.createElement("table");
-  tabla.className = "min-w-full border border-gray-300 bg-white shadow-md rounded-lg overflow-hidden";
+  tabla.className =
+    "min-w-full border border-gray-300 bg-white shadow-md rounded-lg overflow-hidden";
 
-  // Encabezado de la tabla
+  // Encabezado
   tabla.innerHTML = `
     <thead class="bg-gray-200 text-gray-700">
       <tr>
@@ -95,6 +96,8 @@ btnMostrar.addEventListener("click", () => {
         <th class="py-2 px-4 text-left">Autor</th>
         <th class="py-2 px-4 text-left">Año</th>
         <th class="py-2 px-4 text-left">Formato</th>
+        <th class="py-2 px-4 text-left">Estado</th>
+        <th class="py-2 px-4 text-left">Acción</th>
       </tr>
     </thead>
     <tbody id="tablaCuerpo"></tbody>
@@ -103,7 +106,7 @@ btnMostrar.addEventListener("click", () => {
   const cuerpo = tabla.querySelector("#tablaCuerpo");
 
   // Rellenar la tabla con los libros
-  libros.forEach((libro) => {
+  libros.forEach((libro, index) => {
     const fila = document.createElement("tr");
     fila.className = "border-t hover:bg-gray-50 transition";
 
@@ -112,10 +115,29 @@ btnMostrar.addEventListener("click", () => {
       <td class="py-2 px-4">${libro.autor}</td>
       <td class="py-2 px-4">${libro.anio}</td>
       <td class="py-2 px-4">${libro.formato ? libro.formato : "Físico"}</td>
+      <td class="py-2 px-4 font-semibold ${
+        libro.estado === "Disponible" ? "text-green-600" : "text-red-600"
+      }">${libro.estado}</td>
+      <td class="py-2 px-4">
+        <button data-index="${index}" class="btnCambiarEstado bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition">
+          Cambiar estado
+        </button>
+      </td>
     `;
 
     cuerpo.appendChild(fila);
   });
 
   listaLibros.appendChild(tabla);
+
+  // --- Escuchar clics en los botones de cambiar estado ---
+  document.querySelectorAll(".btnCambiarEstado").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const index = e.target.dataset.index;
+      libros[index].cambiarEstado();
+      // Volver a mostrar la tabla actualizada
+      btnMostrar.click();
+    });
+  });
 });
+
