@@ -6,39 +6,155 @@
   <title>Sistema de Biblioteca</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="./src/styles/main.css" />
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    .header-gradient {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 50;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 1000px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 30px;
+    }
+    .role-button {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .role-button:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col items-center py-10">
+<body class="text-gray-800 flex flex-col items-center justify-center py-10 px-4 min-h-screen">
 
-  <h1 class="text-3xl font-bold mb-6 text-blue-700">📚 Sistema de Biblioteca</h1>
-
-  <!-- Formulario para agregar libros -->
-  <div class="bg-white p-6 rounded-lg shadow-md w-96 mb-6">
-    <h2 class="text-xl font-semibold mb-4 text-gray-700">Agregar un libro</h2>
-    <input id="titulo" type="text" placeholder="Título" class="border p-2 w-full mb-3 rounded" />
-    <input id="autor" type="text" placeholder="Autor" class="border p-2 w-full mb-3 rounded" />
-    <input id="anio" type="number" placeholder="Año" class="border p-2 w-full mb-3 rounded" />
-
-    <select id="tipo" class="border p-2 w-full mb-3 rounded">
-      <option value="fisico">Libro Físico</option>
-      <option value="digital">Libro Digital</option>
-    </select>
-
-    <input id="formato" type="text" placeholder="Formato (solo si es digital)" class="border p-2 w-full mb-3 rounded" />
-
-    <button id="btnAgregar" class="bg-green-600 text-white px-4 py-2 rounded w-full hover:bg-green-700">
-      ➕ Agregar Libro
-    </button>
+  <!-- HEADER PRINCIPAL -->
+  <div class="header-gradient text-white text-center mb-10 w-full py-8 rounded-lg">
+    <h1 class="text-4xl font-bold mb-2">📚 Sistema de Biblioteca</h1>
+    <p class="text-lg opacity-90">¡Bienvenido, María Pérez!</p>
   </div>
 
-  <!-- Botón de mostrar -->
-  <div class="flex gap-3 mb-6">
-    <button id="btnMostrar" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-      👁 Mostrar Libros
-    </button>
+  <!-- CONTENEDOR PRINCIPAL CON ROLES -->
+  <div id="vistaRoles" class="w-full max-w-4xl">
+    <div class="card p-10">
+      <h2 class="text-3xl font-bold text-center mb-2 text-gray-800">¿Qué deseas hacer?</h2>
+      <p class="text-center text-gray-600 mb-10">Selecciona una opción para continuar</p>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- BOTÓN: AGREGAR LIBRO -->
+        <div class="role-button bg-green-500 hover:bg-green-600 text-white p-8 rounded-xl text-center">
+          <div class="text-5xl mb-4">➕</div>
+          <h3 class="text-2xl font-bold mb-2">Agregar Libro</h3>
+          <p class="text-green-100">Añade nuevos libros al catálogo</p>
+        </div>
+
+        <!-- BOTÓN: VER LIBROS -->
+        <div class="role-button bg-blue-500 hover:bg-blue-600 text-white p-8 rounded-xl text-center">
+          <div class="text-5xl mb-4">👁</div>
+          <h3 class="text-2xl font-bold mb-2">Ver Libros</h3>
+          <p class="text-blue-100">Consulta el catálogo completo</p>
+        </div>
+
+        <!-- BOTÓN: REGISTRAR USUARIO -->
+        <div class="role-button bg-purple-500 hover:bg-purple-600 text-white p-8 rounded-xl text-center">
+          <div class="text-5xl mb-4">👤</div>
+          <h3 class="text-2xl font-bold mb-2">Registrar Usuario</h3>
+          <p class="text-purple-100">Agrega nuevos usuarios</p>
+        </div>
+
+      </div>
+
+      <p class="text-center text-gray-600 mt-8 text-sm">Puedes cambiar de opción en cualquier momento</p>
+    </div>
   </div>
 
-  <!-- Contenedor para mostrar los libros -->
-  <div id="listaLibros" class="w-96 space-y-3"></div>
+  <!-- CONTENEDOR DE CONTENIDO (OCULTO AL INICIO) -->
+  <div id="vistaContenido" class="w-full max-w-6xl hidden">
+    
+    <!-- HEADER CON BOTÓN VOLVER -->
+    <div class="flex justify-between items-center mb-6">
+      <h2 id="tituloPagina" class="text-3xl font-bold text-white">Agregar Libro</h2>
+      <button id="btnVolver" class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition font-semibold">
+        ← Volver
+      </button>
+    </div>
+
+    <!-- SECCIÓN: AGREGAR LIBRO -->
+    <div id="seccionAgregarLibro" class="hidden card p-8 mb-8">
+      <h2 class="text-2xl font-bold mb-6 text-blue-700 flex items-center gap-2">
+        <span>➕</span> Agregar un Libro
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input id="titulo" type="text" placeholder="Título del libro" 
+          class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500 transition" />
+        <input id="autor" type="text" placeholder="Autor" 
+          class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500 transition" />
+        <input id="anio" type="number" placeholder="Año de publicación" 
+          class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500 transition" />
+        <select id="tipo" class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500 transition">
+          <option value="fisico">📖 Libro Físico</option>
+          <option value="digital">💻 Libro Digital</option>
+        </select>
+        <input id="formato" type="text" placeholder="Formato (PDF, EPUB, etc.)" 
+          class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500 transition" />
+      </div>
+      <button id="btnAgregar" class="bg-green-600 text-white px-6 py-3 rounded-lg w-full mt-4 hover:bg-green-700 transition font-semibold text-lg">
+        ➕ Agregar Libro
+      </button>
+    </div>
+
+    <!-- SECCIÓN: REGISTRAR USUARIO -->
+    <div id="seccionRegistroUsuario" class="hidden card p-8 mb-8">
+      <h2 class="text-2xl font-bold mb-6 text-purple-700 flex items-center gap-2">
+        <span>👤</span> Registrar Usuario
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input id="nombre" type="text" placeholder="Nombre completo" 
+          class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-purple-500 transition" />
+        <input id="email" type="email" placeholder="Email" 
+          class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-purple-500 transition" />
+      </div>
+      <button id="btnRegistrarUsuario" class="bg-purple-600 text-white px-6 py-3 rounded-lg w-full mt-4 hover:bg-purple-700 transition font-semibold text-lg">
+        👤 Registrar Usuario
+      </button>
+    </div>
+
+    <!-- SECCIÓN: VER LIBROS -->
+    <div id="seccionVerLibros" class="hidden card p-8">
+      <h2 class="text-2xl font-bold mb-6 text-blue-700">📚 Catálogo de Libros</h2>
+      <div id="listaLibros"></div>
+    </div>
+
+  </div>
 
   <script type="module" src="./src/js/app.js"></script>
 </body>

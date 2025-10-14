@@ -4,10 +4,28 @@ export class Libro {
     this.titulo = titulo;
     this.autor = autor;
     this.anio = anio;
-    this.estado = "Disponible"; // 👈 nuevo atributo
+    this.estado = "Disponible";
+    this.prestadoA = null; // Usuario que tiene el libro
+    this.fechaPrestamo = null; // Fecha en que se prestó
   }
 
-  // Método para prestar o devolver el libro
+  prestar(usuario) {
+    if (this.estado === "Disponible") {
+      this.estado = "Prestado";
+      this.prestadoA = usuario;
+      this.fechaPrestamo = new Date().toLocaleDateString('es-ES');
+      return true;
+    }
+    return false;
+  }
+
+  devolver() {
+    this.estado = "Disponible";
+    this.prestadoA = null;
+    this.fechaPrestamo = null;
+    return true;
+  }
+
   cambiarEstado() {
     this.estado = this.estado === "Disponible" ? "Prestado" : "Disponible";
   }
