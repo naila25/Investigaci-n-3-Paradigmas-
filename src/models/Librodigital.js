@@ -2,12 +2,12 @@
 import { Libro } from "./Libro.js";
 
 export class LibroDigital extends Libro {
-  constructor(titulo, autor, formato) {
-    super(titulo, autor);
+  constructor(titulo, autor, anio, formato) {
+    super(titulo, autor, anio);
     this.formato = formato;
   }
 
-  info() {
-    return `${this.titulo} - ${this.autor} (${this.formato})`;
-  }
+ info() {
+  return `${this.titulo} - ${this.autor} - Año: ${this.anio} - Formato: ${this.formato}`;
+}
 }
