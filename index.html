@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Biblioteca</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./src/styles/main.css" />
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col items-center py-10">
+
+  <h1 class="text-3xl font-bold mb-6 text-blue-700">📚 Sistema de Biblioteca</h1>
+
+  <!-- Formulario para agregar libros -->
+  <div class="bg-white p-6 rounded-lg shadow-md w-96 mb-6">
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">Agregar un libro</h2>
+    <input id="titulo" type="text" placeholder="Título" class="border p-2 w-full mb-3 rounded" />
+    <input id="autor" type="text" placeholder="Autor" class="border p-2 w-full mb-3 rounded" />
+    <input id="anio" type="number" placeholder="Año" class="border p-2 w-full mb-3 rounded" />
+
+    <select id="tipo" class="border p-2 w-full mb-3 rounded">
+      <option value="fisico">Libro Físico</option>
+      <option value="digital">Libro Digital</option>
+    </select>
+
+    <input id="formato" type="text" placeholder="Formato (solo si es digital)" class="border p-2 w-full mb-3 rounded" />
+
+    <button id="btnAgregar" class="bg-green-600 text-white px-4 py-2 rounded w-full hover:bg-green-700">
+      ➕ Agregar Libro
+    </button>
+  </div>
+
+  <!-- Botón de mostrar -->
+  <div class="flex gap-3 mb-6">
+    <button id="btnMostrar" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      👁 Mostrar Libros
+    </button>
+  </div>
+
+  <!-- Contenedor para mostrar los libros -->
+  <div id="listaLibros" class="w-96 space-y-3"></div>
+
+  <script type="module" src="./src/js/app.js"></script>
+</body>
+</html>
