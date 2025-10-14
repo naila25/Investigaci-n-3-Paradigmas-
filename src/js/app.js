@@ -76,7 +76,6 @@ btnAgregar.addEventListener("click", () => {
 // --- 3) Mostrar libros (asegurarse de llamar al método correcto) ---
 btnMostrar.addEventListener("click", () => {
   listaLibros.innerHTML = "";
-  // Usamos el método que definimos en Biblioteca.js
   const libros = biblioteca.obtenerLibros();
 
   if (!libros || libros.length === 0) {
@@ -84,25 +83,39 @@ btnMostrar.addEventListener("click", () => {
     return;
   }
 
-  libros.forEach((libro) => {
-    const card = document.createElement("div");
-    card.className =
-      "p-4 rounded-lg shadow-md " +
-      (libro instanceof LibroDigital
-        ? "bg-blue-100 border border-blue-300"
-        : "bg-green-100 border border-green-300");
+  // Crear tabla
+  const tabla = document.createElement("table");
+  tabla.className = "min-w-full border border-gray-300 bg-white shadow-md rounded-lg overflow-hidden";
 
-    card.innerHTML = `
-      <h3 class="font-bold">${libro.titulo}</h3>
-      <p>Autor: ${libro.autor}</p>
-      <p>Año: ${libro.anio}</p>
-      ${
-        libro instanceof LibroDigital
-          ? `<p>Formato: <span class="font-medium">${libro.formato}</span></p>`
-          : ""
-      }
+  // Encabezado de la tabla
+  tabla.innerHTML = `
+    <thead class="bg-gray-200 text-gray-700">
+      <tr>
+        <th class="py-2 px-4 text-left">Título</th>
+        <th class="py-2 px-4 text-left">Autor</th>
+        <th class="py-2 px-4 text-left">Año</th>
+        <th class="py-2 px-4 text-left">Formato</th>
+      </tr>
+    </thead>
+    <tbody id="tablaCuerpo"></tbody>
+  `;
+
+  const cuerpo = tabla.querySelector("#tablaCuerpo");
+
+  // Rellenar la tabla con los libros
+  libros.forEach((libro) => {
+    const fila = document.createElement("tr");
+    fila.className = "border-t hover:bg-gray-50 transition";
+
+    fila.innerHTML = `
+      <td class="py-2 px-4">${libro.titulo}</td>
+      <td class="py-2 px-4">${libro.autor}</td>
+      <td class="py-2 px-4">${libro.anio}</td>
+      <td class="py-2 px-4">${libro.formato ? libro.formato : "Físico"}</td>
     `;
 
-    listaLibros.appendChild(card);
+    cuerpo.appendChild(fila);
   });
+
+  listaLibros.appendChild(tabla);
 });

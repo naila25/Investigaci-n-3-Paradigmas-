@@ -1,8 +1,9 @@
 
 export class Libro {
-  constructor(titulo, autor) {
+  constructor(titulo, autor, anio) {
     this.titulo = titulo;
     this.autor = autor;
+    this.anio = anio;
     this.disponible = true;
   }
 
