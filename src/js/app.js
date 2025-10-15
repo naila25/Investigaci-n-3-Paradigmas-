@@ -57,7 +57,7 @@ function mostrarSeccion(seccion) {
     tituloPagina.textContent = "➕ Agregar Libro";
   } else if (seccion === "registrar") {
     seccionRegistroUsuario.classList.remove("hidden");
-    tituloPagina.textContent = "👤 Registrar Usuario";
+    tituloPagina.textContent = "👤 Gestionar Usuarios";
     mostrarUsuarios();
   } else if (seccion === "ver") {
     seccionVerLibros.classList.remove("hidden");

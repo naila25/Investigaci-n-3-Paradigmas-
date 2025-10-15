@@ -3,13 +3,12 @@ export class Usuario {
   constructor(nombre, email) {
     this.nombre = nombre;
     this.email = email;
-    this.prestamos = []; // Array de objetos {libro, fechaPrestamo, estado}
+    this.prestamos = []; // Array de objetos {libro, estado}
   }
 
-  agregarPrestamo(libro, fechaPrestamo) {
+  agregarPrestamo(libro) {
     this.prestamos.push({
       libro: libro,
-      fechaPrestamo: fechaPrestamo,
       estado: "activo"
     });
   }
