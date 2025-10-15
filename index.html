@@ -87,8 +87,8 @@
         <!-- BOTÓN: REGISTRAR USUARIO -->
         <div class="role-button bg-purple-500 hover:bg-purple-600 text-white p-8 rounded-xl text-center">
           <div class="text-5xl mb-4">👤</div>
-          <h3 class="text-2xl font-bold mb-2">Registrar Usuario</h3>
-          <p class="text-purple-100">Agrega nuevos usuarios</p>
+          <h3 class="text-2xl font-bold mb-2">Gestionar Usuarios</h3>
+          <p class="text-purple-100">Agrega y consulta usuarios</p>
         </div>
 
       </div>
@@ -132,7 +132,7 @@
       </button>
     </div>
 
-    <!-- SECCIÓN: REGISTRAR USUARIO -->
+    <!-- SECCIÓN: REGISTRAR Y VER USUARIOS -->
     <div id="seccionRegistroUsuario" class="hidden card p-8 mb-8">
       <h2 class="text-2xl font-bold mb-6 text-purple-700 flex items-center gap-2">
         <span>👤</span> Registrar Usuario
@@ -146,6 +146,16 @@
       <button id="btnRegistrarUsuario" class="bg-purple-600 text-white px-6 py-3 rounded-lg w-full mt-4 hover:bg-purple-700 transition font-semibold text-lg">
         👤 Registrar Usuario
       </button>
+
+      <!-- LISTA DE USUARIOS REGISTRADOS -->
+      <div class="mt-8 pt-8 border-t-2 border-gray-200">
+        <h3 class="text-xl font-bold mb-4 text-purple-700">📋 Usuarios Registrados</h3>
+        <div class="mb-4">
+          <input id="filtroUsuarios" type="text" placeholder="🔍 Buscar por nombre o email..." 
+            class="border-2 border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:border-purple-500 transition" />
+        </div>
+        <div id="listaUsuarios"></div>
+      </div>
     </div>
 
     <!-- SECCIÓN: VER LIBROS -->

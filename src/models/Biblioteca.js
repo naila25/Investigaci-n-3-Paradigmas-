@@ -48,7 +48,7 @@ export class Biblioteca {
 
     // Realizar préstamo
     this.libros[indexLibro].prestar(usuario);
-    usuario.agregarPrestamo(this.libros[indexLibro], new Date().toLocaleDateString('es-ES'));
+    usuario.agregarPrestamo(this.libros[indexLibro]);
 
     return { exito: true, mensaje: `"${this.libros[indexLibro].titulo}" prestado a ${usuario.nombre}` };
   }

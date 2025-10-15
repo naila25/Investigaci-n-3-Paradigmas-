@@ -6,14 +6,12 @@ export class Libro {
     this.anio = anio;
     this.estado = "Disponible";
     this.prestadoA = null; // Usuario que tiene el libro
-    this.fechaPrestamo = null; // Fecha en que se prestó
   }
 
   prestar(usuario) {
     if (this.estado === "Disponible") {
       this.estado = "Prestado";
       this.prestadoA = usuario;
-      this.fechaPrestamo = new Date().toLocaleDateString('es-ES');
       return true;
     }
     return false;
@@ -22,7 +20,6 @@ export class Libro {
   devolver() {
     this.estado = "Disponible";
     this.prestadoA = null;
-    this.fechaPrestamo = null;
     return true;
   }
 
