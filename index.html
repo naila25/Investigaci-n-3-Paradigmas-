@@ -5,19 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sistema de Biblioteca</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="./src/styles/main.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+
   <style>
     body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #f9fafb;
+      font-family: 'Inter', sans-serif;
       min-height: 100vh;
     }
     .card {
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
     }
-    .header-gradient {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .role-button {
+      transition: all 0.3s ease;
+      cursor: pointer;
+      background: white;
+      border: 2px solid #e5e7eb;
+    }
+    .role-button:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      border-color: #2563eb;
+      background-color: #f0f8ff;
     }
     .modal {
       display: none;
@@ -36,82 +48,79 @@
     }
     .modal-content {
       background: white;
-      border-radius: 12px;
+      border-radius: 16px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       width: 90%;
-      max-width: 1000px;
-      max-height: 90vh;
+      max-width: 700px;
+      max-height: 80vh;
       overflow-y: auto;
       padding: 30px;
     }
-    .role-button {
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-    .role-button:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-    }
   </style>
 </head>
+
 <body class="text-gray-800 flex flex-col items-center justify-center py-10 px-4 min-h-screen">
 
   <!-- HEADER PRINCIPAL -->
-  <div class="header-gradient text-white text-center mb-10 w-full py-8 rounded-lg">
-    <h1 class="text-4xl font-bold mb-2">📚 Sistema de Biblioteca</h1>
-    <p class="text-lg opacity-90">¡Bienvenido, María Pérez!</p>
+  <div class="bg-gradient-to-r from-green-800 to-blue-900 text-white text-center mb-10 w-full py-10 rounded-lg shadow-lg">
+    <h1 class="text-5xl font-bold mb-2 tracking-wide flex justify-center items-center gap-3">
+      <i data-lucide="book-open" class="w-10 h-10"></i> Sistema de Biblioteca
+    </h1>
+    <p class="text-lg text-green-100">Bienvenido, <span class="font-semibold">María Pérez</span></p>
   </div>
 
   <!-- CONTENEDOR PRINCIPAL CON ROLES -->
-  <div id="vistaRoles" class="w-full max-w-4xl">
+  <div id="vistaRoles" class="w-full max-w-5xl">
     <div class="card p-10">
       <h2 class="text-3xl font-bold text-center mb-2 text-gray-800">¿Qué deseas hacer?</h2>
-      <p class="text-center text-gray-600 mb-10">Selecciona una opción para continuar</p>
+      <p class="text-center text-gray-500 mb-10">Selecciona una opción para continuar</p>
       
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         <!-- BOTÓN: AGREGAR LIBRO -->
-        <div class="role-button bg-green-500 hover:bg-green-600 text-white p-8 rounded-xl text-center">
-          <div class="text-5xl mb-4">➕</div>
+        <div class="role-button text-gray-800 p-8 rounded-xl text-center hover:text-blue-700">
+          <i data-lucide="plus-square" class="w-12 h-12 mx-auto mb-4"></i>
           <h3 class="text-2xl font-bold mb-2">Agregar Libro</h3>
-          <p class="text-green-100">Añade nuevos libros al catálogo</p>
+          <p class="text-gray-500">Añade nuevos libros al catálogo</p>
         </div>
 
         <!-- BOTÓN: VER LIBROS -->
-        <div class="role-button bg-blue-500 hover:bg-blue-600 text-white p-8 rounded-xl text-center">
-          <div class="text-5xl mb-4">👁</div>
+        <div class="role-button text-gray-800 p-8 rounded-xl text-center hover:text-green-700">
+          <i data-lucide="book" class="w-12 h-12 mx-auto mb-4"></i>
           <h3 class="text-2xl font-bold mb-2">Ver Libros</h3>
-          <p class="text-blue-100">Consulta el catálogo completo</p>
+          <p class="text-gray-500">Consulta el catálogo completo</p>
         </div>
 
-        <!-- BOTÓN: REGISTRAR USUARIO -->
-        <div class="role-button bg-purple-500 hover:bg-purple-600 text-white p-8 rounded-xl text-center">
-          <div class="text-5xl mb-4">👤</div>
+        <!-- BOTÓN: GESTIONAR USUARIOS -->
+        <div class="role-button text-gray-800 p-8 rounded-xl text-center hover:text-purple-700">
+          <i data-lucide="users" class="w-12 h-12 mx-auto mb-4"></i>
           <h3 class="text-2xl font-bold mb-2">Gestionar Usuarios</h3>
-          <p class="text-purple-100">Agrega y consulta usuarios</p>
+          <p class="text-gray-500">Agrega y consulta usuarios</p>
         </div>
 
       </div>
 
-      <p class="text-center text-gray-600 mt-8 text-sm">Puedes cambiar de opción en cualquier momento</p>
+      <p class="text-center text-gray-500 mt-8 text-sm">Puedes cambiar de opción en cualquier momento</p>
     </div>
   </div>
 
-  <!-- CONTENEDOR DE CONTENIDO (OCULTO AL INICIO) -->
+  <!-- CONTENEDOR DE CONTENIDO -->
   <div id="vistaContenido" class="w-full max-w-6xl hidden">
-    
+
     <!-- HEADER CON BOTÓN VOLVER -->
     <div class="flex justify-between items-center mb-6">
-      <h2 id="tituloPagina" class="text-3xl font-bold text-white">Agregar Libro</h2>
-      <button id="btnVolver" class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition font-semibold">
-        ← Volver
+      <h2 id="tituloPagina" class="text-3xl font-bold text-gray-800 flex items-center gap-2">
+        <i data-lucide="book-plus" class="w-7 h-7 text-blue-700"></i> Agregar Libro
+      </h2>
+      <button id="btnVolver" class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition font-semibold flex items-center gap-2">
+        <i data-lucide="arrow-left" class="w-5 h-5"></i> Volver
       </button>
     </div>
 
     <!-- SECCIÓN: AGREGAR LIBRO -->
     <div id="seccionAgregarLibro" class="hidden card p-8 mb-8">
-      <h2 class="text-2xl font-bold mb-6 text-blue-700 flex items-center gap-2">
-        <span>➕</span> Agregar un Libro
+      <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+        <i data-lucide="plus" class="w-6 h-6 text-blue-700"></i> Agregar un Libro
       </h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input id="titulo" type="text" placeholder="Título del libro" 
@@ -127,29 +136,31 @@
         <input id="formato" type="text" placeholder="Formato (PDF, EPUB, etc.)" 
           class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500 transition" />
       </div>
-      <button id="btnAgregar" class="bg-green-600 text-white px-6 py-3 rounded-lg w-full mt-4 hover:bg-green-700 transition font-semibold text-lg">
-        ➕ Agregar Libro
+      <button id="btnAgregar" class="bg-blue-700 text-white px-6 py-3 rounded-lg w-full mt-4 hover:bg-blue-800 transition font-semibold text-lg flex justify-center items-center gap-2">
+        <i data-lucide="plus-circle" class="w-5 h-5"></i> Agregar Libro
       </button>
     </div>
 
-    <!-- SECCIÓN: REGISTRAR Y VER USUARIOS -->
+    <!-- SECCIÓN: GESTIONAR USUARIOS -->
     <div id="seccionRegistroUsuario" class="hidden card p-8 mb-8">
-      <h2 class="text-2xl font-bold mb-6 text-purple-700 flex items-center gap-2">
-        <span>👤</span> Registrar Usuario
+      <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+        <i data-lucide="user-plus" class="w-6 h-6 text-purple-700"></i> Registrar Usuario
       </h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input id="nombre" type="text" placeholder="Nombre completo" 
           class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-purple-500 transition" />
-        <input id="email" type="email" placeholder="Email" 
+        <input id="email" type="email" placeholder="Correo electrónico" 
           class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-purple-500 transition" />
       </div>
-      <button id="btnRegistrarUsuario" class="bg-purple-600 text-white px-6 py-3 rounded-lg w-full mt-4 hover:bg-purple-700 transition font-semibold text-lg">
-        👤 Registrar Usuario
+      <button id="btnRegistrarUsuario" class="bg-purple-700 text-white px-6 py-3 rounded-lg w-full mt-4 hover:bg-purple-800 transition font-semibold text-lg flex justify-center items-center gap-2">
+        <i data-lucide="user-check" class="w-5 h-5"></i> Registrar Usuario
       </button>
 
-      <!-- LISTA DE USUARIOS REGISTRADOS -->
+      <!-- LISTA DE USUARIOS -->
       <div class="mt-8 pt-8 border-t-2 border-gray-200">
-        <h3 class="text-xl font-bold mb-4 text-purple-700">📋 Usuarios Registrados</h3>
+        <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+          <i data-lucide="users" class="w-6 h-6 text-purple-600"></i> Usuarios Registrados
+        </h3>
         <div class="mb-4">
           <input id="filtroUsuarios" type="text" placeholder="🔍 Buscar por nombre o email..." 
             class="border-2 border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:border-purple-500 transition" />
@@ -160,16 +171,37 @@
 
     <!-- SECCIÓN: VER LIBROS -->
     <div id="seccionVerLibros" class="hidden card p-8">
-      <h2 class="text-2xl font-bold mb-6 text-blue-700">📚 Catálogo de Libros</h2>
+      <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+        <i data-lucide="library" class="w-6 h-6 text-green-700"></i> Catálogo de Libros
+      </h2>
       <div class="mb-4">
         <input id="filtroLibros" type="text" placeholder="🔍 Buscar por título o autor..." 
-          class="border-2 border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:border-blue-500 transition" />
+          class="border-2 border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:border-green-500 transition" />
       </div>
       <div id="listaLibros"></div>
     </div>
 
   </div>
 
+  <!-- MODAL DE HISTORIAL -->
+  <div id="modalHistorial" class="modal">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <i data-lucide="clock" class="w-6 h-6 text-blue-700"></i> Historial de Préstamos
+        </h2>
+        <button id="btnCerrarModal" class="text-gray-500 hover:text-gray-800 text-3xl font-bold">
+          ×
+        </button>
+      </div>
+      <div id="nombreUsuarioModal" class="text-lg font-semibold text-blue-700 mb-4"></div>
+      <div id="contenidoHistorial"></div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
   <script type="module" src="./src/js/app.js"></script>
 </body>
 </html>

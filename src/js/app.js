@@ -6,6 +6,92 @@ import { Usuario } from "../models/Usuario.js";
 
 const biblioteca = new Biblioteca();
 
+// --- FUNCIONES DE LOCALSTORAGE ---
+function guardarEnLocalStorage() {
+  const datos = {
+    libros: biblioteca.obtenerLibros().map(libro => ({
+      titulo: libro.titulo,
+      autor: libro.autor,
+      anio: libro.anio,
+      formato: libro.formato || null,
+      estado: libro.estado,
+      prestadoA: libro.prestadoA ? libro.prestadoA.email : null
+    })),
+    usuarios: biblioteca.obtenerUsuarios().map(usuario => ({
+      nombre: usuario.nombre,
+      email: usuario.email,
+      prestamos: usuario.prestamos.map(prestamo => ({
+        libroTitulo: prestamo.libro.titulo,
+        estado: prestamo.estado
+      }))
+    }))
+  };
+  
+  localStorage.setItem('bibliotecaData', JSON.stringify(datos));
+}
+
+function cargarDesdeLocalStorage() {
+  const datosGuardados = localStorage.getItem('bibliotecaData');
+  
+  if (!datosGuardados) return;
+  
+  try {
+    const datos = JSON.parse(datosGuardados);
+    
+    // Cargar usuarios primero
+    datos.usuarios.forEach(usuarioData => {
+      const usuario = new Usuario(usuarioData.nombre, usuarioData.email);
+      biblioteca.agregarUsuario(usuario);
+    });
+    
+    // Cargar libros
+    datos.libros.forEach(libroData => {
+      let libro;
+      if (libroData.formato) {
+        libro = new LibroDigital(libroData.titulo, libroData.autor, libroData.anio, libroData.formato);
+      } else {
+        libro = new Libro(libroData.titulo, libroData.autor, libroData.anio);
+      }
+      
+      biblioteca.agregarLibro(libro);
+      
+      // Restaurar el estado de préstamo si existe
+      if (libroData.estado === "Prestado" && libroData.prestadoA) {
+        const usuario = biblioteca.obtenerUsuario(libroData.prestadoA);
+        if (usuario) {
+          libro.prestar(usuario);
+          usuario.agregarPrestamo(libro);
+        }
+      }
+    });
+    
+    // Restaurar préstamos devueltos en el historial
+    datos.usuarios.forEach((usuarioData, index) => {
+      const usuario = biblioteca.obtenerUsuarios()[index];
+      usuarioData.prestamos.forEach(prestamoData => {
+        if (prestamoData.estado === "devuelto") {
+          const libro = biblioteca.obtenerLibros().find(l => l.titulo === prestamoData.libroTitulo);
+          if (libro) {
+            const yaExiste = usuario.prestamos.some(p => p.libro.titulo === libro.titulo);
+            if (!yaExiste) {
+              usuario.prestamos.push({
+                libro: libro,
+                estado: "devuelto"
+              });
+            }
+          }
+        }
+      });
+    });
+    
+  } catch (error) {
+    console.error("Error al cargar datos:", error);
+  }
+}
+
+// Cargar datos al inicio
+cargarDesdeLocalStorage();
+
 // --- ELEMENTOS DEL DOM ---
 const vistaRoles = document.getElementById("vistaRoles");
 const vistaContenido = document.getElementById("vistaContenido");
@@ -39,9 +125,74 @@ const filtroLibros = document.getElementById("filtroLibros");
 const filtroUsuarios = document.getElementById("filtroUsuarios");
 const listaUsuarios = document.getElementById("listaUsuarios");
 
+// Modal
+const modalHistorial = document.getElementById("modalHistorial");
+const btnCerrarModal = document.getElementById("btnCerrarModal");
+const contenidoHistorial = document.getElementById("contenidoHistorial");
+const nombreUsuarioModal = document.getElementById("nombreUsuarioModal");
+
 // Variables para almacenar datos actuales
 let librosActuales = [];
 let usuariosActuales = [];
+let modoEdicion = false;
+let indexLibroEditar = null;
+
+// --- FUNCIONES DEL MODAL ---
+function abrirModal(usuario) {
+  nombreUsuarioModal.textContent = `Usuario: ${usuario.nombre} (${usuario.email})`;
+  
+  const prestamos = usuario.obtenerTodosPrestamos();
+  
+  if (prestamos.length === 0) {
+    contenidoHistorial.innerHTML = `
+      <p class="text-gray-500 text-center py-8">Este usuario no tiene préstamos registrados.</p>
+    `;
+  } else {
+    let html = `
+      <div class="space-y-3">
+    `;
+    
+    prestamos.forEach((prestamo, index) => {
+      const estadoClass = prestamo.estado === "activo" 
+        ? "bg-green-100 text-green-800" 
+        : "bg-gray-100 text-gray-600";
+      const estadoTexto = prestamo.estado === "activo" ? "Activo 📖" : "Devuelto ✅";
+      
+      html += `
+        <div class="border-2 border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <h4 class="font-bold text-lg text-gray-800">${prestamo.libro.titulo}</h4>
+              <p class="text-gray-600 text-sm">Por: ${prestamo.libro.autor}</p>
+              <p class="text-gray-500 text-xs mt-1">Año: ${prestamo.libro.anio}</p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-sm font-semibold ${estadoClass}">
+              ${estadoTexto}
+            </span>
+          </div>
+        </div>
+      `;
+    });
+    
+    html += `</div>`;
+    contenidoHistorial.innerHTML = html;
+  }
+  
+  modalHistorial.classList.add("active");
+}
+
+function cerrarModal() {
+  modalHistorial.classList.remove("active");
+}
+
+btnCerrarModal.addEventListener("click", cerrarModal);
+
+// Cerrar modal al hacer clic fuera del contenido
+modalHistorial.addEventListener("click", (e) => {
+  if (e.target === modalHistorial) {
+    cerrarModal();
+  }
+});
 
 // --- FUNCIONES DE NAVEGACIÓN ---
 function mostrarSeccion(seccion) {
@@ -71,6 +222,7 @@ function volver() {
   vistaContenido.classList.add("hidden");
   vistaRoles.classList.remove("hidden");
   limpiarFormularios();
+  cancelarEdicion();
 }
 
 function limpiarFormularios() {
@@ -82,6 +234,13 @@ function limpiarFormularios() {
   inputEmail.value = "";
   filtroLibros.value = "";
   filtroUsuarios.value = "";
+}
+
+function cancelarEdicion() {
+  modoEdicion = false;
+  indexLibroEditar = null;
+  btnAgregar.textContent = "➕ Agregar Libro";
+  btnAgregar.className = "bg-green-600 text-white px-6 py-3 rounded-lg w-full mt-4 hover:bg-green-700 transition font-semibold text-lg";
 }
 
 // --- EVENT LISTENERS PARA BOTONES DE ROLES ---
@@ -116,7 +275,7 @@ function actualizarEstadoFormato() {
 actualizarEstadoFormato();
 selectTipo.addEventListener("change", actualizarEstadoFormato);
 
-// --- 2) Agregar libro ---
+// --- 2) Agregar o Actualizar libro ---
 btnAgregar.addEventListener("click", () => {
   const titulo = inputTitulo.value.trim();
   const autor = inputAutor.value.trim();
@@ -129,22 +288,47 @@ btnAgregar.addEventListener("click", () => {
     return;
   }
 
-  let nuevoLibro;
-  if (tipo === "digital") {
-    if (!formato) {
+  if (modoEdicion) {
+    // MODO EDICIÓN
+    const datosActualizados = {
+      titulo: titulo,
+      autor: autor,
+      anio: anio,
+      formato: tipo === "digital" ? formato : null
+    };
+
+    const resultado = biblioteca.actualizarLibro(indexLibroEditar, datosActualizados);
+    
+    if (resultado.exito) {
+      alert(`✅ ${resultado.mensaje}`);
+      guardarEnLocalStorage();
+      limpiarFormularios();
+      cancelarEdicion();
+      actualizarEstadoFormato();
+    } else {
+      alert(`⚠️ ${resultado.mensaje}`);
+    }
+  } else {
+    // MODO AGREGAR
+    if (tipo === "digital" && !formato) {
       alert("⚠️ Debe indicar el formato del libro digital.");
       return;
     }
-    nuevoLibro = new LibroDigital(titulo, autor, anio, formato);
-  } else {
-    nuevoLibro = new Libro(titulo, autor, anio);
+
+    let nuevoLibro;
+    if (tipo === "digital") {
+      nuevoLibro = new LibroDigital(titulo, autor, anio, formato);
+    } else {
+      nuevoLibro = new Libro(titulo, autor, anio);
+    }
+
+    biblioteca.agregarLibro(nuevoLibro);
+    guardarEnLocalStorage();
+    alert(`✅ "${titulo}" fue agregado a la biblioteca.`);
+
+    limpiarFormularios();
+    actualizarEstadoFormato();
   }
-
-  biblioteca.agregarLibro(nuevoLibro);
-  alert(`✅ "${titulo}" fue agregado a la biblioteca.`);
-
-  limpiarFormularios();
-  actualizarEstadoFormato();
 });
 
 // --- 3) Registrar Usuario ---
@@ -160,6 +344,7 @@ btnRegistrarUsuario.addEventListener("click", () => {
   const nuevoUsuario = new Usuario(nombre, email);
   
   if (biblioteca.agregarUsuario(nuevoUsuario)) {
+    guardarEnLocalStorage();
     alert(`✅ "${nombre}" fue registrado como usuario.`);
     inputNombre.value = "";
     inputEmail.value = "";
@@ -182,7 +367,6 @@ function mostrarLibros() {
 
   crearTablaLibros(librosActuales, usuarios);
 
-  // Evento de filtro en tiempo real
   filtroLibros.removeEventListener("input", filtrarLibros);
   filtroLibros.addEventListener("input", filtrarLibros);
 }
@@ -208,7 +392,7 @@ function crearTablaLibros(libros, usuarios) {
         <th class="py-3 px-4 text-left">Tipo</th>
         <th class="py-3 px-4 text-left">Estado</th>
         <th class="py-3 px-4 text-left">Prestado a</th>
-        <th class="py-3 px-4 text-center">Acción</th>
+        <th class="py-3 px-4 text-center">Acciones</th>
       </tr>
     </thead>
     <tbody id="tablaCuerpo"></tbody>
@@ -217,37 +401,59 @@ function crearTablaLibros(libros, usuarios) {
   const cuerpo = tabla.querySelector("#tablaCuerpo");
 
   libros.forEach((libro, index) => {
-    // Encontrar el índice real del libro en biblioteca
     const indexReal = biblioteca.obtenerLibros().indexOf(libro);
     
     const fila = document.createElement("tr");
     fila.className = "border-t hover:bg-blue-50 transition";
 
-    let botonHTML = "";
+    let botonesHTML = "";
     
     if (libro.estado === "Disponible") {
       if (usuarios.length > 0) {
-        let selectUsuarios = `<select id="selectUsuario${indexReal}" class="border p-1 rounded text-sm">
+        let selectUsuarios = `<select id="selectUsuario${indexReal}" class="border p-1 rounded text-sm mb-2">
           <option value="">Seleccionar usuario</option>`;
         usuarios.forEach((usuario, uIndex) => {
           selectUsuarios += `<option value="${uIndex}">${usuario.nombre}</option>`;
         });
         selectUsuarios += `</select>`;
         
-        botonHTML = `
-          ${selectUsuarios}
-          <button data-index="${indexReal}" class="btnPrestar bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition mt-2">
-            ✅ Prestar
-          </button>
+        botonesHTML = `
+          <div class="flex flex-col gap-2">
+            ${selectUsuarios}
+            <button data-index="${indexReal}" class="btnPrestar bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition">
+              ✅ Prestar
+            </button>
+            <button data-index="${indexReal}" class="btnEditar bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition">
+              ✏️ Editar
+            </button>
+            <button data-index="${indexReal}" class="btnEliminar bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition">
+              🗑️ Eliminar
+            </button>
+          </div>
         `;
       } else {
-        botonHTML = `<span class="text-gray-500 text-sm">No hay usuarios</span>`;
+        botonesHTML = `
+          <div class="flex flex-col gap-2">
+            <span class="text-gray-500 text-sm">No hay usuarios</span>
+            <button data-index="${indexReal}" class="btnEditar bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition">
+              ✏️ Editar
+            </button>
+            <button data-index="${indexReal}" class="btnEliminar bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition">
+              🗑️ Eliminar
+            </button>
+          </div>
+        `;
       }
     } else {
-      botonHTML = `
-        <button data-index="${indexReal}" class="btnDevolver bg-orange-500 text-white px-3 py-1 rounded text-sm hover:bg-orange-600 transition">
-          🔄 Devolver
-        </button>
+      botonesHTML = `
+        <div class="flex flex-col gap-2">
+          <button data-index="${indexReal}" class="btnDevolver bg-orange-500 text-white px-3 py-1 rounded text-sm hover:bg-orange-600 transition">
+            🔄 Devolver
+          </button>
+          <button data-index="${indexReal}" class="btnEditar bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition">
+            ✏️ Editar
+          </button>
+        </div>
       `;
     }
 
@@ -261,9 +467,7 @@ function crearTablaLibros(libros, usuarios) {
       }">${libro.estado}</td>
       <td class="py-3 px-4 text-sm">${libro.prestadoA ? libro.prestadoA.nombre : "-"}</td>
       <td class="py-3 px-4 text-center">
-        <div class="flex flex-col items-center gap-2">
-          ${botonHTML}
-        </div>
+        ${botonesHTML}
       </td>
     `;
 
@@ -289,6 +493,7 @@ function crearTablaLibros(libros, usuarios) {
       const resultado = biblioteca.prestarLibro(indexReal, usuario);
 
       if (resultado.exito) {
+        guardarEnLocalStorage();
         alert(`✅ ${resultado.mensaje}`);
         mostrarLibros();
       } else {
@@ -304,10 +509,62 @@ function crearTablaLibros(libros, usuarios) {
       const resultado = biblioteca.devolverLibro(indexReal);
 
       if (resultado.exito) {
+        guardarEnLocalStorage();
         alert(`✅ ${resultado.mensaje}`);
         mostrarLibros();
       } else {
         alert(`⚠️ ${resultado.mensaje}`);
+      }
+    });
+  });
+
+  // Escuchar clics en botones de editar
+  document.querySelectorAll(".btnEditar").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const indexReal = e.target.dataset.index;
+      const libro = biblioteca.obtenerLibros()[indexReal];
+
+      mostrarSeccion("agregar");
+
+      inputTitulo.value = libro.titulo;
+      inputAutor.value = libro.autor;
+      inputAnio.value = libro.anio;
+      
+      if (libro.formato) {
+        selectTipo.value = "digital";
+        inputFormato.value = libro.formato;
+      } else {
+        selectTipo.value = "fisico";
+      }
+      
+      actualizarEstadoFormato();
+
+      modoEdicion = true;
+      indexLibroEditar = indexReal;
+      
+      btnAgregar.textContent = "💾 Guardar Cambios";
+      btnAgregar.className = "bg-blue-600 text-white px-6 py-3 rounded-lg w-full mt-4 hover:bg-blue-700 transition font-semibold text-lg";
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  // Escuchar clics en botones de eliminar
+  document.querySelectorAll(".btnEliminar").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const indexReal = e.target.dataset.index;
+      const libro = biblioteca.obtenerLibros()[indexReal];
+
+      if (confirm(`¿Estás seguro de eliminar "${libro.titulo}"?`)) {
+        const resultado = biblioteca.eliminarLibro(indexReal);
+
+        if (resultado.exito) {
+          guardarEnLocalStorage();
+          alert(`✅ ${resultado.mensaje}`);
+          mostrarLibros();
+        } else {
+          alert(`⚠️ ${resultado.mensaje}`);
+        }
       }
     });
   });
@@ -339,7 +596,6 @@ function mostrarUsuarios() {
 
   crearTablaUsuarios(usuariosActuales);
 
-  // Evento de filtro en tiempo real
   filtroUsuarios.removeEventListener("input", filtrarUsuarios);
   filtroUsuarios.addEventListener("input", filtrarUsuarios);
 }
@@ -363,6 +619,7 @@ function crearTablaUsuarios(usuarios) {
         <th class="py-3 px-4 text-left">Email</th>
         <th class="py-3 px-4 text-center">Préstamos Activos</th>
         <th class="py-3 px-4 text-center">Total Préstamos</th>
+        <th class="py-3 px-4 text-center">Acciones</th>
       </tr>
     </thead>
     <tbody id="tablaUsuariosCuerpo"></tbody>
@@ -370,7 +627,7 @@ function crearTablaUsuarios(usuarios) {
 
   const cuerpo = tabla.querySelector("#tablaUsuariosCuerpo");
 
-  usuarios.forEach((usuario) => {
+  usuarios.forEach((usuario, index) => {
     const fila = document.createElement("tr");
     fila.className = "border-t hover:bg-purple-50 transition";
 
@@ -386,12 +643,26 @@ function crearTablaUsuarios(usuarios) {
       <td class="py-3 px-4 text-center">
         <span class="bg-blue-200 text-blue-800 px-3 py-1 rounded-full">${totalPrestamos}</span>
       </td>
+      <td class="py-3 px-4 text-center">
+        <button data-index="${index}" class="btnVerHistorial bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition font-semibold">
+          📖 Ver Historial
+        </button>
+      </td>
     `;
 
     cuerpo.appendChild(fila);
   });
 
   listaUsuarios.appendChild(tabla);
+
+  // Escuchar clics en botones de ver historial
+  document.querySelectorAll(".btnVerHistorial").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const index = e.target.dataset.index;
+      const usuario = biblioteca.obtenerUsuarios()[index];
+      abrirModal(usuario);
+    });
+  });
 }
 
 // Función de filtro para usuarios
