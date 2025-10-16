@@ -26,24 +26,24 @@ function guardarEnLocalStorage() {
       }))
     }))
   };
-  
+
   localStorage.setItem('bibliotecaData', JSON.stringify(datos));
 }
 
 function cargarDesdeLocalStorage() {
   const datosGuardados = localStorage.getItem('bibliotecaData');
-  
+
   if (!datosGuardados) return;
-  
+
   try {
     const datos = JSON.parse(datosGuardados);
-    
+
     // Cargar usuarios primero
     datos.usuarios.forEach(usuarioData => {
       const usuario = new Usuario(usuarioData.nombre, usuarioData.email);
       biblioteca.agregarUsuario(usuario);
     });
-    
+
     // Cargar libros
     datos.libros.forEach(libroData => {
       let libro;
@@ -52,9 +52,9 @@ function cargarDesdeLocalStorage() {
       } else {
         libro = new Libro(libroData.titulo, libroData.autor, libroData.anio);
       }
-      
+
       biblioteca.agregarLibro(libro);
-      
+
       // Restaurar el estado de préstamo si existe
       if (libroData.estado === "Prestado" && libroData.prestadoA) {
         const usuario = biblioteca.obtenerUsuario(libroData.prestadoA);
@@ -64,7 +64,7 @@ function cargarDesdeLocalStorage() {
         }
       }
     });
-    
+
     // Restaurar préstamos devueltos en el historial
     datos.usuarios.forEach((usuarioData, index) => {
       const usuario = biblioteca.obtenerUsuarios()[index];
@@ -83,7 +83,7 @@ function cargarDesdeLocalStorage() {
         }
       });
     });
-    
+
   } catch (error) {
     console.error("Error al cargar datos:", error);
   }
@@ -108,6 +108,7 @@ const inputAutor = document.getElementById("autor");
 const inputAnio = document.getElementById("anio");
 const selectTipo = document.getElementById("tipo");
 const inputFormato = document.getElementById("formato");
+const inputCantidad = document.getElementById("cantidad");
 
 // Campos del formulario de usuario
 const inputNombre = document.getElementById("nombre");
@@ -140,9 +141,9 @@ let indexLibroEditar = null;
 // --- FUNCIONES DEL MODAL ---
 function abrirModal(usuario) {
   nombreUsuarioModal.textContent = `Usuario: ${usuario.nombre} (${usuario.email})`;
-  
+
   const prestamos = usuario.obtenerTodosPrestamos();
-  
+
   if (prestamos.length === 0) {
     contenidoHistorial.innerHTML = `
       <p class="text-gray-500 text-center py-8">Este usuario no tiene préstamos registrados.</p>
@@ -151,13 +152,13 @@ function abrirModal(usuario) {
     let html = `
       <div class="space-y-3">
     `;
-    
+
     prestamos.forEach((prestamo, index) => {
-      const estadoClass = prestamo.estado === "activo" 
-        ? "bg-green-100 text-green-800" 
+      const estadoClass = prestamo.estado === "activo"
+        ? "bg-green-100 text-green-800"
         : "bg-gray-100 text-gray-600";
       const estadoTexto = prestamo.estado === "activo" ? "Activo 📖" : "Devuelto ✅";
-      
+
       html += `
         <div class="border-2 border-gray-200 rounded-lg p-4 hover:shadow-md transition">
           <div class="flex justify-between items-start">
@@ -173,11 +174,11 @@ function abrirModal(usuario) {
         </div>
       `;
     });
-    
+
     html += `</div>`;
     contenidoHistorial.innerHTML = html;
   }
-  
+
   modalHistorial.classList.add("active");
 }
 
@@ -198,11 +199,11 @@ modalHistorial.addEventListener("click", (e) => {
 function mostrarSeccion(seccion) {
   vistaRoles.classList.add("hidden");
   vistaContenido.classList.remove("hidden");
-  
+
   seccionAgregarLibro.classList.add("hidden");
   seccionRegistroUsuario.classList.add("hidden");
   seccionVerLibros.classList.add("hidden");
-  
+
   if (seccion === "agregar") {
     seccionAgregarLibro.classList.remove("hidden");
     tituloPagina.textContent = "➕ Agregar Libro";
@@ -230,6 +231,7 @@ function limpiarFormularios() {
   inputAutor.value = "";
   inputAnio.value = "";
   inputFormato.value = "";
+   inputCantidad.value = ""; 
   inputNombre.value = "";
   inputEmail.value = "";
   filtroLibros.value = "";
@@ -282,6 +284,13 @@ btnAgregar.addEventListener("click", () => {
   const anio = inputAnio.value.trim();
   const tipo = selectTipo.value;
   const formato = inputFormato.value.trim();
+  const cantidad = parseInt(inputCantidad.value) || 1; // Por defecto 1
+
+  // Validación de cantidad
+  if (cantidad < 1) {
+    alert("⚠️ La cantidad debe ser al menos 1.");
+    return;
+  }
 
   if (!titulo || !autor || !anio) {
     alert("⚠️ Por favor complete todos los campos requeridos (Título, Autor, Año).");
@@ -290,15 +299,22 @@ btnAgregar.addEventListener("click", () => {
 
   if (modoEdicion) {
     // MODO EDICIÓN
-    const datosActualizados = {
-      titulo: titulo,
-      autor: autor,
-      anio: anio,
-      formato: tipo === "digital" ? formato : null
-    };
+     const libroActual = biblioteca.obtenerLibros()[indexLibroEditar];
 
-    const resultado = biblioteca.actualizarLibro(indexLibroEditar, datosActualizados);
-    
+  if (tipo === "digital") {
+    libroActual.titulo = titulo;
+    libroActual.autor = autor;
+    libroActual.anio = anio;
+    libroActual.formato = formato;
+  } else {
+    libroActual.titulo = titulo;
+    libroActual.autor = autor;
+    libroActual.anio = anio;
+    libroActual.cantidad = cantidad; // Actualiza cantidad solo para físicos
+  }
+
+  const resultado = biblioteca.actualizarLibro(indexLibroEditar, libroActual);
+
     if (resultado.exito) {
       alert(`✅ ${resultado.mensaje}`);
       guardarEnLocalStorage();
@@ -319,8 +335,9 @@ btnAgregar.addEventListener("click", () => {
     if (tipo === "digital") {
       nuevoLibro = new LibroDigital(titulo, autor, anio, formato);
     } else {
-      nuevoLibro = new Libro(titulo, autor, anio);
+      nuevoLibro = new Libro(titulo, autor, anio, cantidad); // Solo físico
     }
+
 
     biblioteca.agregarLibro(nuevoLibro);
     guardarEnLocalStorage();
@@ -330,6 +347,10 @@ btnAgregar.addEventListener("click", () => {
     actualizarEstadoFormato();
   }
 });
+
+
+
+
 
 // --- 3) Registrar Usuario ---
 btnRegistrarUsuario.addEventListener("click", () => {
@@ -342,7 +363,7 @@ btnRegistrarUsuario.addEventListener("click", () => {
   }
 
   const nuevoUsuario = new Usuario(nombre, email);
-  
+
   if (biblioteca.agregarUsuario(nuevoUsuario)) {
     guardarEnLocalStorage();
     alert(`✅ "${nombre}" fue registrado como usuario.`);
@@ -353,6 +374,12 @@ btnRegistrarUsuario.addEventListener("click", () => {
     alert("⚠️ El email ya está registrado.");
   }
 });
+
+
+
+
+
+
 
 // --- 4) Mostrar libros ---
 function mostrarLibros() {
@@ -370,10 +397,9 @@ function mostrarLibros() {
   filtroLibros.removeEventListener("input", filtrarLibros);
   filtroLibros.addEventListener("input", filtrarLibros);
 }
-
 function crearTablaLibros(libros, usuarios) {
   listaLibros.innerHTML = "";
-  
+
   if (libros.length === 0) {
     listaLibros.innerHTML = `<p class="text-gray-500 text-center text-lg">No se encontraron resultados.</p>`;
     return;
@@ -402,13 +428,12 @@ function crearTablaLibros(libros, usuarios) {
 
   libros.forEach((libro, index) => {
     const indexReal = biblioteca.obtenerLibros().indexOf(libro);
-    
     const fila = document.createElement("tr");
     fila.className = "border-t hover:bg-blue-50 transition";
 
+    // Crear botones según el estado del libro
     let botonesHTML = "";
-    
-    if (libro.estado === "Disponible") {
+    if (libro.estado === "Disponible" || libro instanceof LibroDigital) {
       if (usuarios.length > 0) {
         let selectUsuarios = `<select id="selectUsuario${indexReal}" class="border p-1 rounded text-sm mb-2">
           <option value="">Seleccionar usuario</option>`;
@@ -416,7 +441,7 @@ function crearTablaLibros(libros, usuarios) {
           selectUsuarios += `<option value="${uIndex}">${usuario.nombre}</option>`;
         });
         selectUsuarios += `</select>`;
-        
+
         botonesHTML = `
           <div class="flex flex-col gap-2">
             ${selectUsuarios}
@@ -457,15 +482,24 @@ function crearTablaLibros(libros, usuarios) {
       `;
     }
 
+    // Agregar fila con todos los datos
     fila.innerHTML = `
       <td class="py-3 px-4 font-semibold">${libro.titulo}</td>
       <td class="py-3 px-4">${libro.autor}</td>
       <td class="py-3 px-4">${libro.anio}</td>
       <td class="py-3 px-4">${libro.formato ? libro.formato : "Físico"}</td>
-      <td class="py-3 px-4 font-semibold ${
-        libro.estado === "Disponible" ? "text-green-600" : "text-red-600"
-      }">${libro.estado}</td>
-      <td class="py-3 px-4 text-sm">${libro.prestadoA ? libro.prestadoA.nombre : "-"}</td>
+      <td class="py-3 px-4 font-semibold ${libro instanceof LibroDigital ? "text-green-600" : (libro.estado === "Disponible" ? "text-green-600" : "text-red-600")
+      }">
+        ${libro instanceof LibroDigital ? "Disponible" : libro.estado}
+      </td>
+      <td class="py-3 px-4 text-sm">
+        ${libro instanceof LibroDigital
+        ? "-" //se cambio no muestra nombres 
+        : libro.prestadoA
+          ? libro.prestadoA.nombre
+          : "-"
+      }
+      </td>
       <td class="py-3 px-4 text-center">
         ${botonesHTML}
       </td>
@@ -476,10 +510,11 @@ function crearTablaLibros(libros, usuarios) {
 
   listaLibros.appendChild(tabla);
 
-  // Escuchar clics en botones de prestar
+  // --- EVENTOS BOTONES ---
   document.querySelectorAll(".btnPrestar").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const indexReal = e.target.dataset.index;
+      const libro = biblioteca.obtenerLibros()[indexReal];
       const usuarios = biblioteca.obtenerUsuarios();
       const selectUsuario = document.getElementById(`selectUsuario${indexReal}`);
       const indexUsuario = selectUsuario.value;
@@ -490,8 +525,17 @@ function crearTablaLibros(libros, usuarios) {
       }
 
       const usuario = usuarios[indexUsuario];
-      const resultado = biblioteca.prestarLibro(indexReal, usuario);
 
+      if (libro instanceof LibroDigital) {
+        libro.prestar(usuario); // agrega al array de prestadosA
+        guardarEnLocalStorage();
+        alert(`✅ "${libro.titulo}" digital prestado a ${usuario.nombre} .`);
+        mostrarLibros();
+        return;
+      }
+
+      // libros físicos
+      const resultado = biblioteca.prestarLibro(indexReal, usuario);
       if (resultado.exito) {
         guardarEnLocalStorage();
         alert(`✅ ${resultado.mensaje}`);
@@ -502,7 +546,6 @@ function crearTablaLibros(libros, usuarios) {
     });
   });
 
-  // Escuchar clics en botones de devolver
   document.querySelectorAll(".btnDevolver").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const indexReal = e.target.dataset.index;
@@ -518,7 +561,6 @@ function crearTablaLibros(libros, usuarios) {
     });
   });
 
-  // Escuchar clics en botones de editar
   document.querySelectorAll(".btnEditar").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const indexReal = e.target.dataset.index;
@@ -529,27 +571,26 @@ function crearTablaLibros(libros, usuarios) {
       inputTitulo.value = libro.titulo;
       inputAutor.value = libro.autor;
       inputAnio.value = libro.anio;
-      
+
       if (libro.formato) {
         selectTipo.value = "digital";
         inputFormato.value = libro.formato;
       } else {
         selectTipo.value = "fisico";
       }
-      
+
       actualizarEstadoFormato();
 
       modoEdicion = true;
       indexLibroEditar = indexReal;
-      
+
       btnAgregar.textContent = "💾 Guardar Cambios";
       btnAgregar.className = "bg-blue-600 text-white px-6 py-3 rounded-lg w-full mt-4 hover:bg-blue-700 transition font-semibold text-lg";
-      
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
 
-  // Escuchar clics en botones de eliminar
   document.querySelectorAll(".btnEliminar").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const indexReal = e.target.dataset.index;
@@ -570,14 +611,64 @@ function crearTablaLibros(libros, usuarios) {
   });
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Función de filtro para libros
 function filtrarLibros(e) {
   const filtro = e.target.value.toLowerCase();
   const libros = biblioteca.obtenerLibros();
   const usuarios = biblioteca.obtenerUsuarios();
-  
-  const librosFiltrados = libros.filter(libro => 
-    libro.titulo.toLowerCase().includes(filtro) || 
+
+  const librosFiltrados = libros.filter(libro =>
+    libro.titulo.toLowerCase().includes(filtro) ||
     libro.autor.toLowerCase().includes(filtro)
   );
 
@@ -602,7 +693,7 @@ function mostrarUsuarios() {
 
 function crearTablaUsuarios(usuarios) {
   listaUsuarios.innerHTML = "";
-  
+
   if (usuarios.length === 0) {
     listaUsuarios.innerHTML = `<p class="text-gray-500 text-center text-lg">No se encontraron resultados.</p>`;
     return;
@@ -669,9 +760,9 @@ function crearTablaUsuarios(usuarios) {
 function filtrarUsuarios(e) {
   const filtro = e.target.value.toLowerCase();
   const usuarios = biblioteca.obtenerUsuarios();
-  
-  const usuariosFiltrados = usuarios.filter(usuario => 
-    usuario.nombre.toLowerCase().includes(filtro) || 
+
+  const usuariosFiltrados = usuarios.filter(usuario =>
+    usuario.nombre.toLowerCase().includes(filtro) ||
     usuario.email.toLowerCase().includes(filtro)
   );
 
