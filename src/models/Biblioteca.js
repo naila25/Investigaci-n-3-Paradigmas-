@@ -17,6 +17,38 @@ export class Biblioteca {
     return this.obtenerLibros();
   }
 
+  // ===== ELIMINAR LIBRO =====
+  eliminarLibro(indexLibro) {
+    if (this.libros[indexLibro]) {
+      const libroEliminado = this.libros[indexLibro];
+      
+      // Verificar si el libro está prestado
+      if (libroEliminado.estado === "Prestado") {
+        return { exito: false, mensaje: "No se puede eliminar un libro que está prestado" };
+      }
+      
+      this.libros.splice(indexLibro, 1);
+      return { exito: true, mensaje: `"${libroEliminado.titulo}" fue eliminado correctamente` };
+    }
+    return { exito: false, mensaje: "Libro no encontrado" };
+  }
+
+  // ===== ACTUALIZAR LIBRO =====
+  actualizarLibro(indexLibro, datosActualizados) {
+    if (this.libros[indexLibro]) {
+      const libro = this.libros[indexLibro];
+      
+      // Actualizar solo los campos permitidos
+      if (datosActualizados.titulo) libro.titulo = datosActualizados.titulo;
+      if (datosActualizados.autor) libro.autor = datosActualizados.autor;
+      if (datosActualizados.anio) libro.anio = datosActualizados.anio;
+      if (datosActualizados.formato !== undefined) libro.formato = datosActualizados.formato;
+      
+      return { exito: true, mensaje: `"${libro.titulo}" fue actualizado correctamente` };
+    }
+    return { exito: false, mensaje: "Libro no encontrado" };
+  }
+
   // ===== GESTIÓN DE USUARIOS =====
   agregarUsuario(usuario) {
     const existe = this.usuarios.some(u => u.email === usuario.email);
