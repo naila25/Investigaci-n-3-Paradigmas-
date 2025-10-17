@@ -1,10 +1,9 @@
-
+// src/models/Biblioteca.js
 export class Biblioteca {
   constructor() {
     this.libros = [];
     this.usuarios = [];
   }
-
 
   agregarLibro(libro) {
     this.libros.push(libro);
@@ -66,6 +65,22 @@ export class Biblioteca {
 
   obtenerUsuarios() {
     return this.usuarios;
+  }
+
+  // ===== ELIMINAR USUARIO =====
+  eliminarUsuario(indexUsuario) {
+    if (this.usuarios[indexUsuario]) {
+      const usuarioEliminado = this.usuarios[indexUsuario];
+      
+      // Verificar si el usuario tiene préstamos activos
+      if (usuarioEliminado.obtenerPrestamosActivos().length > 0) {
+        return { exito: false, mensaje: "No se puede eliminar un usuario con préstamos activos" };
+      }
+      
+      this.usuarios.splice(indexUsuario, 1);
+      return { exito: true, mensaje: `"${usuarioEliminado.nombre}" fue eliminado correctamente` };
+    }
+    return { exito: false, mensaje: "Usuario no encontrado" };
   }
 
   // ===== GESTIÓN DE PRÉSTAMOS =====

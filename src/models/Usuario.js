@@ -1,4 +1,4 @@
-
+// src/models/Usuario.js
 export class Usuario {
   constructor(nombre, email) {
     this.nombre = nombre;

@@ -92,7 +92,7 @@
         </div>
 
         <!-- BOTÓN: GESTIONAR USUARIOS -->
-        <div class="role-button text-gray-800 p-8 rounded-xl text-center hover:text-purple-700">
+        <div class="role-button text-gray-800 p-8 rounded-xl text-center hover:text-blue-700">
           <i data-lucide="users" class="w-12 h-12 mx-auto mb-4"></i>
           <h3 class="text-2xl font-bold mb-2">Gestionar Usuarios</h3>
           <p class="text-gray-500">Agrega y consulta usuarios</p>
@@ -135,7 +135,6 @@
         </select>
         <input id="formato" type="text" placeholder="Formato (PDF, EPUB, etc.)" 
           class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500 transition" />
-            <input id="cantidad" type="number" placeholder="Cantidad" min="1" class="border p-2 rounded" />
       </div>
       <button id="btnAgregar" class="bg-blue-700 text-white px-6 py-3 rounded-lg w-full mt-4 hover:bg-blue-800 transition font-semibold text-lg flex justify-center items-center gap-2">
         <i data-lucide="plus-circle" class="w-5 h-5"></i> Agregar Libro
@@ -145,26 +144,26 @@
     <!-- SECCIÓN: GESTIONAR USUARIOS -->
     <div id="seccionRegistroUsuario" class="hidden card p-8 mb-8">
       <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
-        <i data-lucide="user-plus" class="w-6 h-6 text-purple-700"></i> Registrar Usuario
+        <i data-lucide="user-plus" class="w-6 h-6 text-blue-700"></i> Registrar Usuario
       </h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input id="nombre" type="text" placeholder="Nombre completo" 
-          class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-purple-500 transition" />
+          class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500 transition" />
         <input id="email" type="email" placeholder="Correo electrónico" 
-          class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-purple-500 transition" />
+          class="border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500 transition" />
       </div>
-      <button id="btnRegistrarUsuario" class="bg-purple-700 text-white px-6 py-3 rounded-lg w-full mt-4 hover:bg-purple-800 transition font-semibold text-lg flex justify-center items-center gap-2">
+      <button id="btnRegistrarUsuario" class="bg-blue-700 text-white px-6 py-3 rounded-lg w-full mt-4 hover:bg-blue-800 transition font-semibold text-lg flex justify-center items-center gap-2">
         <i data-lucide="user-check" class="w-5 h-5"></i> Registrar Usuario
       </button>
 
       <!-- LISTA DE USUARIOS -->
       <div class="mt-8 pt-8 border-t-2 border-gray-200">
         <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
-          <i data-lucide="users" class="w-6 h-6 text-purple-600"></i> Usuarios Registrados
+          <i data-lucide="users" class="w-6 h-6 text-blue-600"></i> Usuarios Registrados
         </h3>
         <div class="mb-4">
           <input id="filtroUsuarios" type="text" placeholder="🔍 Buscar por nombre o email..." 
-            class="border-2 border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:border-purple-500 transition" />
+            class="border-2 border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:border-blue-500 transition" />
         </div>
         <div id="listaUsuarios"></div>
       </div>
