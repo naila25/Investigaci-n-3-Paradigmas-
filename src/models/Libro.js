@@ -7,11 +7,11 @@ export class Libro {
     this.estado = "Disponible";
     this.prestadoA = null; // Usuario que tiene el libro
   }
-
+//polimorfismo
   prestar(usuario) {
     if (this.estado === "Disponible") {
       this.estado = "Prestado";
-      this.prestadoA = usuario;
+      this.prestadoA = usuario; //solo un usuario
       return true;
     }
     return false;

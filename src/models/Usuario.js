@@ -1,6 +1,6 @@
 // src/models/Usuario.js
 export class Usuario {
-  constructor(nombre, email) {
+  constructor(nombre, email) { // Atributos encapsulados
     this.nombre = nombre;
     this.email = email;
     this.prestamos = []; // Array de objetos {libro, estado}
@@ -29,8 +29,11 @@ export class Usuario {
     return this.prestamos;
   }
 
+//ABSTRACCIÓN
   puedePrestar() {
-    return this.obtenerPrestamosActivos().length < 2;
+     // Internamente: filtra los préstamos activos, cuenta cuántos son, y compara con el límite de 2
+
+    return this.obtenerPrestamosActivos().length < 2; // ← La regla está aquí maximo solo 2 libros puede prestar
   }
 
   info() {
