@@ -1,14 +1,15 @@
 import { Libro } from "./Libro.js";
 
-export class LibroDigital extends Libro {
+export class LibroDigital extends Libro { // Hereda de Libro
   constructor(titulo, autor, anio, formato) {
-    super(titulo, autor, anio);
-    this.formato = formato;
+    super(titulo, autor, anio); // Llama al constructor de la clase padre
+    this.formato = formato;     // Agrega nueva propiedad
     this.prestadosA = []; // Lista de usuarios
   }
 
+  //polimorfismo
   prestar(usuario) {
-    this.prestadosA.push(usuario);
+    this.prestadosA.push(usuario); // ← MÚLTIPLES usuarios
     return true; // Siempre se puede prestar
   }
 
