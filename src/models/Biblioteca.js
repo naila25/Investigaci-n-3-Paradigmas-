@@ -1,9 +1,10 @@
-// src/models/Biblioteca.js
+
 export class Biblioteca {
   constructor() {
     this.libros = [];
     this.usuarios = [];
   }
+
 
   agregarLibro(libro) {
     this.libros.push(libro);

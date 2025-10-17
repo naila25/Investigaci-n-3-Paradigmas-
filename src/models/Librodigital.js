@@ -13,7 +13,7 @@ export class LibroDigital extends Libro {
   }
 
   devolver(usuario) {
-    // Opcional: quitar un usuario si quieres
+    // Opc: quitar un usuario si quieres
     this.prestadosA = this.prestadosA.filter(u => u.email !== usuario.email);
     return true;
   }
@@ -23,3 +23,6 @@ export class LibroDigital extends Libro {
     return `${this.titulo} - ${this.autor} - Año: ${this.anio} - Formato: ${this.formato} - Estado: Disponible - Prestado a: ${nombres}`;
   }
 }
+
+
+

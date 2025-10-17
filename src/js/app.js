@@ -1,4 +1,4 @@
-// src/js/app.js
+
 import { Libro } from "../models/Libro.js";
 import { LibroDigital } from "../models/Librodigital.js";
 import { Biblioteca } from "../models/Biblioteca.js";
@@ -285,6 +285,8 @@ btnAgregar.addEventListener("click", () => {
   const tipo = selectTipo.value;
   const formato = inputFormato.value.trim();
   const cantidad = parseInt(inputCantidad.value) || 1; // Por defecto 1
+
+
 
   // Validación de cantidad
   if (cantidad < 1) {

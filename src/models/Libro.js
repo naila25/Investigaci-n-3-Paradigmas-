@@ -1,4 +1,4 @@
-// src/models/Libro.js
+
 export class Libro {
   constructor(titulo, autor, anio, cantidad = 1) {
     this.titulo = titulo;
@@ -8,6 +8,7 @@ export class Libro {
     this.prestadoA = null; // Usuario que tiene el libro
     this.cantidad = cantidad; // Nueva propiedad
   }
+
 
   prestar(usuario) {
     if (this.cantidad > 0) {
