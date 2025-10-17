@@ -1,26 +1,30 @@
-// src/models/Libro.js
+
 export class Libro {
-  constructor(titulo, autor, anio) {
+  constructor(titulo, autor, anio, cantidad = 1) {
     this.titulo = titulo;
     this.autor = autor;
     this.anio = anio;
-    this.estado = "Disponible";
+    this.estado = cantidad > 0 ? "Disponible" : "Agotado"; // Estado según cantidad
     this.prestadoA = null; // Usuario que tiene el libro
+    this.cantidad = cantidad; // Nueva propiedad
   }
 
+
   prestar(usuario) {
-    if (this.estado === "Disponible") {
-      this.estado = "Prestado";
+    if (this.cantidad > 0) {
+      this.cantidad--; // Reducir cantidad
       this.prestadoA = usuario;
-      return true;
+      this.estado = this.cantidad > 0 ? "Disponible" : "Agotado";
+      return { exito: true, mensaje: `Libro prestado a ${usuario.nombre}` };
     }
-    return false;
+    return { exito: false, mensaje: "No hay unidades disponibles" };
   }
 
   devolver() {
+    this.cantidad++; // Aumentar cantidad
     this.estado = "Disponible";
     this.prestadoA = null;
-    return true;
+    return { exito: true, mensaje: "Libro devuelto con éxito" };
   }
 
   cambiarEstado() {
@@ -28,6 +32,6 @@ export class Libro {
   }
 
   info() {
-    return `${this.titulo} - ${this.autor} (${this.anio}) - Estado: ${this.estado}`;
+    return `${this.titulo} - ${this.autor} (${this.anio}) - Estado: ${this.estado} - Cantidad: ${this.cantidad}`;
   }
 }
